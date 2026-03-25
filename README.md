@@ -470,12 +470,9 @@ server:
 ### [Unreleased]
 
 **Added**
-- Dashboard「基础设置」面板：端口、代理、HTTP/1.1、默认模型、推理等级、注入/压制、Token 刷新开关
-- Dashboard「配额设置」面板：新增并发数配置
-- 代理池 YAML 导入导出（`/api/proxies/export`、`/api/proxies/import`）
-- 账号列表分页（默认显示 10 个，可展开）
-- Token 自动刷新开关（`auth.refresh_enabled`）
-- ...（[查看全部](./CHANGELOG.md)）
+- Token 刷新并发控制（`auth.refresh_concurrency`，默认 2）：多账号同时到期时限制并发数，避免上游限流
+- Dashboard 基础设置新增「刷新并发数」配置项
+- README 添加局域网访问说明（`0.0.0.0` 配置 + Electron 路径）
 **Changed**
 - TLS 指纹对齐：curl-impersonate 升级支持 chrome144 profile（v1.5.1），`KNOWN_CHROME_PROFILES` 新增 133/142
 - 默认协议从 HTTP/1.1 改为 HTTP/2，匹配真实 Codex Desktop 行为
@@ -484,9 +481,10 @@ server:
 - 配额刷新改为有限并发（默认 10，可配 `quota.concurrency`），不再全量并发
 - ...（[查看全部](./CHANGELOG.md)）
 **Fixed**
-- 配置 overlay 机制：Dashboard 设置写入 `data/local.yaml`（gitignored），不再修改 `config/default.yaml`
-  - `git pull` 不会覆盖用户自定义设置（proxy_api_key、rotation_strategy、quota 等）
-  - `config/default.yaml` 的 `proxy_api_key` 默认值改为 `null`（自动生成）
+- Electron 模式下 `data/local.yaml` 中的 `server.host` 配置不生效——Electron 硬编码 `127.0.0.1` 覆盖了用户配置，现在 `local.yaml` 显式设置的 host 优先于启动参数（#175）
+- Dashboard 清空上游代理后 reload 被环境变量 `HTTPS_PROXY` 覆盖回来——`local.yaml` 显式设置的 `proxy_url` 现在优先于环境变量
+- Release 资产命名统一：`artifactName` 模板强制 `Codex-Proxy-{version}-{os}-{arch}.{ext}`，消除 `Codex.Proxy` vs `Codex-Proxy` 重复，x64 DMG 现在明确标注架构（`mac-x64`）
+- macOS x64 构建前清理旧资产，避免 release 页面出现重复文件
 
 ### [v0.8.0](https://github.com/icebear0828/codex-proxy/releases/tag/v0.8.0) - 2026-02-24
 
